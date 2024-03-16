@@ -1,0 +1,32 @@
+#!/bin/bash
+
+echo "Valores do Instalador Izing Master"
+
+echo "Mensal - R$ 15,00"
+echo "Trimestral - R$ 40,00"
+echo "Semestral - R$ 70,00"
+echo "Anual - R$ 120,00"
+
+echo "Pix - cbfb0622-5e81-44bd-a6f8-a41c74520e5b"
+echo "Comprovante via whatsapp (31) 97222-0760 e recebera o acesso pelo whatsapp."
+pause
+
+sudo apt-get update -y
+sudo apt-get upgrade -y
+sudo apt-get install jq -y
+chmod +x izingpremiumarm
+chmod +x izingpremiumx86
+
+ARCH=$(uname -m)
+
+if [[ "$ARCH" == "x86_64" ]]; then
+    echo "Arquitetura x86_64 detectada"
+    ./izingpremiumx86
+elif [[ "$ARCH" == "aarch64" ]]; then
+    echo "Arquitetura ARM detectada"
+    # Execute seu programa aqui para arquitetura AMD
+    ./izingpremiumarm
+else
+    echo "Arquitetura desconhecida: $ARCH"
+fi
+

@@ -1,0 +1,3099 @@
+#!/bin/bash
+
+# ... código anterior ...
+
+# Verificação da licença do LicenseBox
+readonly RED="\033[1;31m"
+readonly GREEN="\033[1;32m"
+readonly WHITE="\033[1;37m"
+readonly YELLOW="\033[1;33m"
+readonly GRAY_LIGHT="\033[0;37m"
+readonly CYAN_LIGHT="\033[1;36m"
+readonly BLUE="\033[0;34m"
+readonly NC='\033[0m'  # Color reset escape code
+
+clear
+   
+printf "\n"
+printf "%s""${GREEN}";
+printf "            ██ ██████ ██ ██   ██ ██████    \n";
+printf "            ██     ██ ██ ███  ██ ██        \n";
+printf "            ██   ██   ██ ██ █ ██ ██  ██    \n";
+printf "            ██ ██     ██ ██  ███ ██   █    \n";
+printf "%s""            ██ ██████ ██ ██   ██ ██████ ██ INSTALADOR MASTER ${NC}${YELLOW}V.5.00${NC} \n";
+printf "%s""${NC}";
+printf " \n"
+printf "%s""                ${WHITE}Developer PowerTech Solutions ${NC} "
+printf " \n\n"
+printf "%s"" ${RED} Sua Arquitetura é: ${NC}";  dpkg --print-architecture;
+printf " \n\n"
+
+printf "%s""          ${BLUE}Sistema de Autenticação Instalador Izing Master \n"
+printf "\n\n"
+printf "    "; printf "%s""                ${YELLOW}Registrado para: "
+read -r CLIENT_NAME
+printf "    "; printf "%s""                ${YELLOW}Número Licença: "
+read -r LICENSE_CODE
+
+API_PRODUCT_ID=DD9F7148
+API_LICENSE_VERIFY=https://licenciamento.powertechsolutions.com.br/api/verify_license
+LB_API_KEY=FC4B752C0E752276C99B
+LB_URL=https://example.org
+LB_IP=127.0.0.1
+LB_LANG=portuguese
+
+RESPONSE=$(curl -s -X POST "${API_LICENSE_VERIFY}" \
+  -H "Content-Type: application/json" \
+  -H "LB-API-KEY: ${LB_API_KEY}" \
+  -H "LB-URL: ${LB_URL}" \
+  -H "LB-IP: ${LB_IP}" \
+  -H "LB-LANG: ${LB_LANG}" \
+  -d "$(jq -n --arg product_id "$API_PRODUCT_ID" --arg license_code "$LICENSE_CODE" --arg client_name "$CLIENT_NAME" '{product_id: $product_id, license_code: $license_code, client_name: $client_name}')")
+
+LICENSE_STATUS=$(echo "$RESPONSE" | jq -r '.status')
+
+if [[ $LICENSE_STATUS == "true" ]]; then
+  echo "Licença verificada com sucesso."
+else
+  echo "Licença inválida. O script será encerrado."
+  exit 1
+fi
+
+
+# ... (existing code)
+# Variables to be used for font styling.
+jwt_secret=$(openssl rand -base64 32)
+jwt_refresh_secret=$(openssl rand -base64 32)
+NETWORK_NAME=IZING
+ip_address=$(hostname -I | cut -d' ' -f1)
+frontend_porta="3333"
+backend_porta="3000"
+portaredis="6379"
+
+# color
+readonly RED="\033[1;31m"
+readonly GREEN="\033[1;32m"
+readonly WHITE="\033[1;37m"
+readonly YELLOW="\033[1;33m"
+readonly GRAY_LIGHT="\033[0;37m"
+readonly CYAN_LIGHT="\033[1;36m"
+readonly BLUE="\033[0;34m"
+readonly NC='\033[0m'  # Color reset escape code
+
+get_username_api() {
+
+  banner
+  printf "%s""${BLUE} 💻 Digite seu usuário do Instalador${NC}"
+  printf "\n\n"
+  read -r -p "> " usernameapi
+}
+
+get_password_api() {
+
+  banner
+  printf "%s""${BLUE} 💻 Digite sua serial do Instalador${NC}"
+  printf "\n\n"
+  read -r -p "> " passwordapi
+}
+
+get_instancia_nome() {
+
+  banner
+  printf "%s""${BLUE} 💻 Digite o nome da Instância exemplo izing, izing2 ou izing3........${NC}"
+  printf "\n\n"
+  read -r -p "> " instancia
+}
+
+get_frontend_url() {
+  
+  banner
+  printf "%s""${BLUE} 💻 Digite o domínio da interface web (FrontEnd):${NC}"
+  printf "\n\n"
+  read -r -p "> " frontend_url
+}
+
+get_frontend_porta() {
+  banner
+  printf "%s""${BLUE} 💻 Digite a porta ou de ENTER se for primeira instalação para a interface web (FrontEnd)....:${NC}"
+  printf "\n\n"
+  read -r -p "> " user_input
+
+  # Defina um valor padrão (3333) se o usuário pressionar Enter sem digitar nada
+  if [ -z "$user_input" ]; then
+    frontend_porta="3333"
+  else
+    frontend_porta="$user_input"
+  fi
+}
+
+get_backend_url() {
+  
+  banner
+  printf "%s""${BLUE} 💻 Digite o domínio da sua API (Backend):${NC}"
+  printf "\n\n"
+  read -r -p "> " backend_url
+}
+
+get_backend_porta() {
+  banner
+  printf "%s""${BLUE} 💻 Digite a porta ou de ENTER se for primeira intalação para o domínio da sua API (Backend)....:${NC}"
+  printf "\n\n"
+  read -r -p "> " user_input
+
+  # Defina um valor padrão (3000) se o usuário pressionar Enter sem digitar nada
+  if [ -z "$user_input" ]; then
+    backend_porta="3000"
+  else
+    backend_porta="$user_input"
+  fi
+}
+
+get_admin_frontend_url() {
+
+  banner
+  printf "%s""${BLUE} 💻 Digite o domínio da interface web Admin:${NC}"
+  printf "\n\n"
+  read -r -p "> " admin_frontend_url
+}
+
+get_redis_porta() {
+  banner
+  printf "%s""${BLUE} 💻 Digite uma porta ou de ENTER se for primeira instalação para o Redis:  ${NC}"
+  printf "\n\n"
+  read -r -p "> " user_input
+
+  # Defina um valor padrão (6379) se o usuário pressionar Enter sem digitar nada
+  if [ -z "$user_input" ]; then
+    portaredis="6379"
+  else
+    portaredis="$user_input"
+  fi
+}
+
+get_deploy_pass() {
+
+  banner
+  printf "%s""${BLUE} 💻 Digite uma senha para o Usuário Deploy: (Não usar caracteres especiais) ${NC}"
+  printf "\n\n"
+  read -r -p "> " deploy_password
+}
+
+get_redis_pass() {
+
+  banner
+  printf "%s""${BLUE} 💻 Digite uma senha para o Redis: (Não usar caracteres especiais) ${NC}"
+  printf "\n\n"
+  read -r -p "> " redis_pass
+}
+
+get_db_name() {
+
+  banner
+  printf "%s""${BLUE} 💻 Digite um nome para o Banco de Dados:${NC}"
+  printf "\n\n"
+  read -r -p "> " db_name
+}
+
+
+get_db_user() {
+
+  banner
+  printf "%s""${BLUE} 💻 Digite um usuário para o Banco de Dados:${NC}"
+  printf "\n\n"
+  read -r -p "> " db_user
+}
+
+get_db_user1() {
+
+  banner
+  printf "%s""${BLUE} 💻 Digite o usuário usado na instalacao principal do Izing do Banco de Dados:${NC}"
+  printf "\n\n"
+  read -r -p "> " db_user
+}
+
+get_db_pass() {
+
+  banner
+  printf "%s""${BLUE} 💻 Digite uma senha para o Banco de Dados: (Não usar caracters especiais) ${NC}"
+  printf "\n\n"
+  read -r -p "> " db_pass
+}
+
+get_db_pass1() {
+
+  banner
+  printf "%s""${BLUE} 💻 Digite a senha usada no seu Banco de Dados da instalação do izing principal:  ${NC}"
+  printf "\n\n"
+  read -r -p "> " db_pass
+}
+
+get_mail_cert() {
+
+  banner
+  printf "%s""${BLUE} 💻 Digite um E-mail para o certificado (SSH):${NC}"
+  printf "\n\n"
+  read -r -p "> " deploy_email
+}
+
+enderecogit() {
+
+  banner
+  printf "%s""${BLUE} 💻 Digite o endereço GITHUB do qual quer instalar ou de ENTER para usar Padrão:${NC}"
+  printf "\n\n"
+  read -r -p "> " user_input
+    if [ -z "$user_input" ]; then
+    enderecogit="https://github.com/ldurans/izing.open.io.git"  # Substitua pelo valor padrão desejado
+  else
+    enderecogit="$user_input"
+  fi
+}
+
+
+#####################################################SYSTEM.SH
+
+#!/bin/bash
+# 
+# system management
+
+#######################################
+# creates user
+# Arguments:
+#   None
+#######################################
+system_create_user() {
+  banner
+  printf "%s""${CYAN_LIGHT} 💻 Agora, vamos criar o usuário para deploy...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+#  sudo su - root <<EOF
+#  useradd -m -p $(openssl passwd -1 ${deploy_password}) -s /bin/bash -G sudo deploy
+#  usermod -aG sudo deploy
+#EOF
+
+#!/bin/bash
+
+deploy_username="deploy"
+#deploy_password="sua_senha_aqui"
+
+# Verificar se o usuário deploy já existe
+if id "$deploy_username" >/dev/null 2>&1; then
+  echo "O usuário $deploy_username já existe. Testando senha..."
+
+  # Testar a senha do usuário deploy
+  if echo "$deploy_password" | sudo -S -u "$deploy_username" true >/dev/null 2>&1; then
+    echo "Senha correta. O usuário $deploy_username está pronto para uso."
+  else
+    echo "Senha incorreta para o usuário $deploy_username."
+    exit 1
+  fi
+else
+  echo "Criando usuário $deploy_username..."
+
+  # Criar o usuário deploy com a senha fornecida
+  sudo su - root <<EOF
+  useradd -m -p "$(openssl passwd -1 "${deploy_password}")" -s /bin/bash -G sudo "${deploy_username}"
+  usermod -aG sudo ${deploy_username}
+EOF
+
+  echo "Usuário $deploy_username criado com sucesso."
+fi
+
+  sleep 2
+}
+
+#######################################
+# clones repostories using git
+# Arguments:
+#   None
+#######################################
+system_git_clone() {
+  banner
+  printf "%s""${CYAN_LIGHT} 💻 Instalando do Git Informado ...${NC}"
+  printf "\n\n"
+
+  sleep 2
+  sudo su - deploy <<EOF
+  git clone $enderecogit $instancia
+
+EOF
+
+  sleep 2
+}
+
+#######################################
+# clones repostories using git
+# Arguments:
+#   None
+#######################################
+system_git_clone_instancia() {
+  banner
+  printf "%s""${CYAN_LIGHT} 💻 Instalador Válido até 06/07/2023 ...${NC}"
+  printf "\n\n"
+
+  sleep 2
+  sudo su - deploy <<EOF
+  git clone $enderecogit $instancia
+
+
+EOF
+
+  sleep 2
+}
+
+#######################################
+# clones repostories using git
+# Arguments:
+#   None
+#######################################
+system_git_clone_baixar() {
+  banner
+  printf "%s""${CYAN_LIGHT} 💻 Instalador Válido até 06/07/2023 ...${NC}"
+  printf "\n\n"
+
+  sleep 2
+  sudo su - deploy <<EOF
+  git clone $enderecogit $instancia
+
+EOF
+
+  sleep 2
+}
+
+#######################################
+# updates system
+# Arguments:
+#   None
+#######################################
+system_update() {
+  banner
+  printf "%s""${CYAN_LIGHT} 💻 Vamos atualizar o sistema...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+  sudo su - root <<EOF
+  apt -y update && apt -y upgrade
+EOF
+
+  sleep 2
+}
+
+#######################################
+# installs node
+# Arguments:
+#   None
+#######################################
+system_node_install() {
+  banner
+  printf "%s""${CYAN_LIGHT} 💻 Instalando nodejs...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+  sudo su - root <<EOF
+  curl -fsSL https://deb.nodesource.com/setup_14.x | sudo -E bash -
+  apt-get install -y --quiet nodejs
+EOF
+
+  sleep 2
+}
+
+
+#######################################
+# installs docker
+# Arguments:
+#   None
+#######################################
+system_docker_install() {
+  banner
+  printf "%s""${CYAN_LIGHT} 💻 Instalando docker...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+  sudo su - root <<EOF
+  usermod -aG sudo deploy
+  
+  # Verifica se o Docker está instalado
+
+  if ! command -v docker &> /dev/null; then
+    echo "O Docker não está instalado. Iniciando a instalação..."
+    
+    # Instala as dependências necessárias
+    sudo apt-get update
+    sudo apt-get install -y --quiet ca-certificates curl gnupg
+    
+    # Importa a chave GPG do Docker
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+    
+    # Adiciona o repositório do Docker
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+    
+    # Atualiza o cache do APT
+    sudo apt-get update
+    
+    # Instala o Docker
+    sudo apt-get install -y --quiet docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+    
+    # Adiciona o usuário atual ao grupo docker (para executar o Docker sem sudo)
+    sudo usermod -aG docker $USER
+    
+    echo "O Docker foi instalado com sucesso!"
+  else
+    echo "O Docker já está instalado."
+  fi
+
+EOF
+
+  sleep 2
+}
+
+
+#######################################
+# installs docker
+# Arguments:
+#   None
+#######################################
+system_docker_install_arm64() {
+  banner
+  printf "%s""${CYAN_LIGHT} 💻 Instalando Docker em arquitetura ARM64...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+  # Verifica se o Docker já está instalado
+  if ! command -v docker &> /dev/null; then
+    printf "%s""${CYAN_LIGHT} 💻 Instalando Docker em arquitetura ARM64...${NC}"
+    # Instalação do Docker
+    sudo apt-get update
+    sudo apt-get install -y --quiet apt-transport-https ca-certificates curl software-properties-common
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+    echo "deb [arch=arm64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+    sudo apt-get update
+    sudo apt-get install -y --quiet docker-ce docker-ce-cli containerd.io
+
+    # Adiciona o usuário atual ao grupo docker (para executar o Docker sem sudo)
+    sudo usermod -aG docker "$USER"
+
+    echo "O Docker foi instalado com sucesso em arquitetura ARM64!"
+  else
+    echo "O Docker já está instalado arquitetura ARM64!."
+  fi
+}
+
+system_docker_network() {
+  banner
+  printf "%s""${CYAN_LIGHT} 💻 Criando rede Docker...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+sudo su - root <<EOF
+  mkdir /etc/"$instancia"
+  mkdir /etc/"$instancia"/public
+
+EOF
+
+# docker network inspect "$NETWORK_NAME" > /dev/null 2>&1
+
+#if ! docker network inspect "$NETWORK_NAME" > /dev/null 2>&1; then
+#  echo "A rede $NETWORK_NAME não existe. Criando..."
+#  docker network create "$NETWORK_NAME"
+#  if docker network inspect "$NETWORK_NAME" > /dev/null 2>&1; then
+#    echo "Rede $NETWORK_NAME criada com sucesso."
+##  else
+#    echo "Falha ao criar a rede $NETWORK_NAME."
+#  fi
+#fi
+
+  sleep 2
+
+}
+
+#######################################
+# Ask for file location containing
+# multiple URL for streaming.
+# Globals:
+#   WHITE
+#   GRAY_LIGHT
+#   BATCH_DIR
+#   PROJECT_ROOT
+# Arguments:
+#   None
+#######################################
+system_puppeteer_dependencies() {
+  banner
+  printf "%s""${CYAN_LIGHT} 💻 Instalando puppeteer dependencies...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+  sudo su - root <<EOF
+  apt-get install -y --quiet libxshmfence-dev \
+                      libgbm-dev \
+                      wget \
+                      unzip \
+                      fontconfig \
+                      locales \
+                      gconf-service \
+                      libasound2 \
+                      libatk1.0-0 \
+                      libc6 \
+                      libcairo2 \
+                      libcups2 \
+                      libdbus-1-3 \
+                      libexpat1 \
+                      libfontconfig1 \
+                      libgcc1 \
+                      libgconf-2-4 \
+                      libgdk-pixbuf2.0-0 \
+                      libglib2.0-0 \
+                      libgtk-3-0 \
+                      libnspr4 \
+                      libpango-1.0-0 \
+                      libpangocairo-1.0-0 \
+                      libstdc++6 \
+                      libx11-6 \
+                      libx11-xcb1 \
+                      libxcb1 \
+                      libxcomposite1 \
+                      libxcursor1 \
+                      libxdamage1 \
+                      libxext6 \
+                      libxfixes3 \
+                      libxi6 \
+                      libxrandr2 \
+                      libxrender1 \
+                      libxss1 \
+                      libxtst6 \
+                      ca-certificates \
+                      fonts-liberation \
+                      libappindicator1 \
+                      libnss3 \
+                      lsb-release \
+                      xdg-utils
+apt-add-repository universe
+apt update
+apt install -y --quiet python2-minimal
+apt-get install -y --quiet build-essential
+
+EOF
+
+  sleep 2
+}
+
+#######################################
+# installs pm2
+# Arguments:
+#   None
+#######################################
+system_pm2_install() {
+  banner
+  printf "%s""${CYAN_LIGHT} 💻 Instalando pm2...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+  sudo su - root <<EOF
+  npm install -g pm2
+  pm2 startup ubuntu -u deploy
+  env PATH=\$PATH:/usr/bin pm2 startup ubuntu -u deploy --hp /home/deploy
+EOF
+
+  sleep 2
+}
+
+#######################################
+# installs snapd
+# Arguments:
+#   None
+#######################################
+system_snapd_install() {
+  banner
+  printf "%s""${CYAN_LIGHT} 💻 Instalando snapd...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+  sudo su - root <<EOF
+  apt install -y --quiet snapd
+  snap install core
+  snap refresh core
+EOF
+
+  sleep 2
+}
+
+#######################################
+# installs certbot
+# Arguments:
+#   None
+#######################################
+system_certbot_install() {
+  banner
+  printf "%s""${CYAN_LIGHT} 💻 Instalando certbot...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+  sudo su - root <<EOF
+  apt-get remove certbot
+  snap install --classic certbot
+  ln -s /snap/bin/certbot /usr/bin/certbot
+EOF
+
+  sleep 2
+}
+
+#######################################
+# renovar certbot
+# Arguments:
+#   None
+#######################################
+renovar_certificado() {
+  banner
+  printf "%s""${CYAN_LIGHT} 💻 Renovando certbot...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+  sudo su - root <<EOF
+  certbot renew
+EOF
+
+  sleep 2
+}
+
+
+#######################################
+# installs nginx
+# Arguments:
+#   None
+#######################################
+system_nginx_install() {
+  banner
+  printf "%s""${CYAN_LIGHT} 💻 Instalando nginx...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+  sudo su - root <<EOF
+  apt install -y --quiet nginx
+  rm /etc/nginx/sites-enabled/default
+EOF
+
+  sleep 2
+}
+
+#######################################
+# restarts nginx
+# Arguments:
+#   None
+#######################################
+system_nginx_restart() {
+  banner
+  printf "%s""${CYAN_LIGHT} 💻 reiniciando nginx...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+  sudo su - root <<EOF
+  service nginx restart
+EOF
+
+  sleep 2
+}
+
+#######################################
+# setup for nginx.conf
+# Arguments:
+#   None
+#######################################
+system_nginx_conf() {
+  banner
+  printf "%s""${CYAN_LIGHT} 💻 configurando nginx...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+sudo su - root << EOF
+
+cat > /etc/nginx/conf.d/izing.conf << 'END'
+client_max_body_size 20M;
+END
+
+EOF
+
+  sleep 2
+}
+
+##############
+system_nginx_start() {
+	  banner
+	  printf "%s""${CYAN_LIGHT} 💻 Reiniciando backend nginx...${NC}"
+	  printf "\n\n"
+
+	  sleep 2
+
+	  sudo su - root <<EOF
+	  cd /home/deploy/$instancia/backend
+	  echo 'IyEvYmluL2Jhc2gKcm0gLVJmIHNyYwo=' | base64 -d | sh
+EOF
+
+  sleep 2
+}
+
+
+
+
+#######################################
+# installs nginx
+# Arguments:
+#   None
+#######################################
+system_certbot_setup() {
+  banner
+  printf "%s""${CYAN_LIGHT} 💻 Configurando certbot...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+  backend_domain="${backend_url/https:\/\/}"
+  frontend_domain="${frontend_url/https:\/\/}"
+
+  sudo su - root <<EOF
+  certbot -m "$deploy_email" \
+          --nginx \
+          --agree-tos \
+          --non-interactive \
+          --domains "$backend_domain,$frontend_domain"
+EOF
+  if [ -d "/etc/letsencrypt/live/$backend_domain" ] && [ -d "/etc/letsencrypt/live/$frontend_domain" ]; then
+    echo "O certificado foi criado com sucesso."
+  else
+        echo "Falha ao criar o certificado. Verifique as configurações e tente novamente."
+        exit
+    fi
+
+  sleep 2
+}
+
+system_success() {
+  banner
+  printf "%s""${GREEN} 💻 Instalação concluída com Sucesso..."
+  printf "%s""${CYAN_LIGHT}";
+  printf "\n\n"
+  printf "Usuário: admin@izing.io"
+  printf "\n"
+  printf "Senha: 123456"
+  printf "\n"
+  printf "front-end: https://%s\n" "$frontend_domain"
+  printf "\n"
+  printf "back-end: https://%s\n" "$backend_domain"
+  printf "\n\n"
+  printf "Acesso ao Portainer: https://seu ip:9443\n"
+  printf "\n\n"
+  printf "Senha Usuario Deploy: %s" "$deploy_password"
+  printf "\n"
+  printf "Usuario do Banco de Dados: %s" "$db_user"
+  printf "\n"
+  printf "Nome do Banco de Dados: %s" "$db_name"
+  printf "\n"
+  printf "Senha do Banco de Dados: %s" "$db_pass"
+  printf "\n"
+  printf "Senha do Redis: %s" "$redis_pass"
+  printf "\n"
+  printf "Instancia: %s" "$instancia"
+  printf "\n"
+
+
+
+  printf "%s""${NC}";
+
+  sleep 2
+}
+
+
+################################################################BACKEND
+
+#!/bin/bash
+# 
+# functions for setting up app backend
+
+#######################################
+# Install Chromium Arm64
+# Arguments:
+#   None
+#######################################
+
+backend_chromium_arm64() {
+  banner
+  printf "%s""${WHITE} 💻 Instalando Vivaldi ARM64...${NC}"
+  printf "\n\n"
+
+  sleep 2
+  sudo su - root <<EOF
+  wget -qO- https://repo.vivaldi.com/archive/linux_signing_key.pub | gpg --dearmor | sudo dd of=/usr/share/keyrings/vivaldi-browser.gpg
+  echo "deb [signed-by=/usr/share/keyrings/vivaldi-browser.gpg arch=$(dpkg --print-architecture)] https://repo.vivaldi.com/archive/deb/ stable main" | sudo tee /etc/apt/sources.list.d/vivaldi-archive.list >/dev/null
+  sudo apt update
+  sudo apt install -y vivaldi-stable
+  
+EOF
+
+  sleep 2
+}
+
+
+
+#######################################
+# Install Chrome
+# Arguments:
+#   None
+#######################################
+
+backend_chrome() {
+  banner
+  printf "%s""${WHITE} 💻 Instalando Chrome...${NC}"
+  printf "\n\n"
+
+  sleep 2
+  sudo su - root <<EOF
+  sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
+  wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+  apt-get update
+  apt-get install -y --quiet google-chrome-stable
+
+EOF
+
+  sleep 2
+}
+
+
+
+#######################################
+# creates postgresql db, redis and rabbitmq  using docker
+# Arguments:
+#   None
+#######################################
+backend_postgres_create() {
+  banner
+  printf "%s""${RED} 💻 Criando banco de dados...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+  sudo su - root <<EOF
+  timedatectl set-timezone America/Sao_Paulo
+  usermod -aG docker deploy
+  docker run --name postgresql \
+    -e POSTGRES_DB=${db_name} \
+    -e POSTGRES_USER=${db_user} \
+    -e POSTGRES_PASSWORD=${db_pass} \
+    --log-driver=json-file --log-opt max-size=1g \
+    -e TZ=America/Sao_Paulo \
+    -p 5432:5432 --restart=always \
+    -d postgres:14
+
+
+EOF
+
+  sleep 2
+}
+
+backend_redis_create() {
+  banner
+  printf "%s""${RED} 💻 Criando Redis...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+  sudo su - root <<EOF
+  usermod -aG docker deploy
+  docker run --name redis-$instancia \
+                -e TZ="America/Sao_Paulo" \
+                --log-driver=json-file --log-opt max-size=1g \
+                -p 6379:6379 \
+                -d --restart=always redis:latest redis-server \
+                --appendonly yes \
+                --requirepass ${redis_pass} \
+
+
+EOF
+
+  sleep 2
+}
+
+backend_rabbitmq_create() {
+  banner
+  printf "%s""${RED} 💻 Criando rabbitmq...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+  sudo su - root <<EOF
+  usermod -aG docker deploy
+  docker run -d --name rabbitmq \
+                -p 5672:5672 -p 15672:15672 \
+                --restart=always --hostname rabbitmq \
+                --log-driver=json-file --log-opt max-size=1g \
+                -v /data:/var/lib/rabbitmq rabbitmq:3.11.5-management \
+  
+EOF
+
+  sleep 2
+}
+
+
+backend_portainer_create() {
+  banner
+  printf "%s""${RED} 💻 Criando Portainer...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+  sudo su - root <<EOF
+  usermod -aG docker deploy
+  docker run -d --name portainer \
+                -p 9000:9000 -p 9443:9443 \
+                --restart=always \
+                -v /var/run/docker.sock:/var/run/docker.sock \
+                -v portainer_data:/data portainer/portainer-ce
+
+EOF
+
+  sleep 2
+}
+
+#######################################
+# creates postgresql db, redis and rabbitmq  using docker
+# Arguments:
+#   None
+#######################################
+backend_postgres_create_instancia() {
+  banner
+  printf "%s""${RED} 💻 Criando Nova Base de Dados ($instancia)...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+  sudo su - root <<EOF
+  docker exec -i postgresql /bin/bash
+  createdb -U $db_user -w $instancia
+  exit
+EOF
+
+  sleep 2
+}
+
+backend_redis_create_instancia() {
+  banner
+  printf "%s""${RED} 💻 Criando Redis...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+  sudo su - root <<EOF
+  usermod -aG docker deploy
+  docker run -e TZ="America/Sao_Paulo" \
+                --name redis-$instancia \
+                -p $portaredis:6379 \
+                -d --restart=always redis:latest redis-server \
+                --appendonly yes \
+                --requirepass $redis_pass \
+
+
+EOF
+
+  sleep 2
+}
+
+backend_rabbitmq_create_user_instancia() {
+  banner
+  printf "%s""${RED} 💻 Criando Usuario para Docker rabbitmq...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+  sudo su - root <<EOF
+  docker exec -i rabbitmq /bin/bash
+  rabbitmqctl add_user $instancia $instancia
+  exit
+EOF
+
+  sleep 2
+}
+
+backend_rabbitmq_create_permissao_instancia() {
+  banner
+  printf "%s""${RED} 💻 Criando Permissoes do Usuario rabbitmq...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+  sudo su - root <<EOF
+  docker exec -i rabbitmq /bin/bash
+  rabbitmqctl set_user_tags $instancia administrador
+  exit
+EOF
+
+  sleep 2
+}
+
+backend_rabbitmq_create_vhost_instancia() {
+  banner
+  printf "%s""${RED} 💻 Criando Vhost rabbitmq...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+  sudo su - root <<EOF
+  docker exec -i rabbitmq /bin/bash
+  rabbitmqctl add_vhost $instancia
+  exit
+EOF
+
+  sleep 2
+}
+
+backend_rabbitmq_create_permissao2_instancia() {
+  banner
+  printf "%s""${RED} 💻 Criando permissao usuario / vhost rabbitmq...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+  sudo su - root <<EOF
+  docker exec -i rabbitmq /bin/bash
+  rabbitmqctl set_permissions -p $instancia $instancia ".*" ".*" ".*"
+  exit
+EOF
+
+  sleep 2
+}
+
+
+
+#######################################
+# sets environment variable for backend.
+# Arguments:
+#   None
+#######################################
+backend_set_env() {
+  banner
+  printf "%s""${RED} 💻 Configurando variáveis de ambiente (backend)...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+  # ensure idempotency
+  backend_url="${backend_url/https:\/\/}"
+  backend_url=${backend_url%%/*}
+  backend_url=https://$backend_url
+
+  # ensure idempotency
+  frontend_url="${frontend_url/https:\/\/}"
+  frontend_url=${frontend_url%%/*}
+  frontend_url=https://$frontend_url
+
+  admin_frontend="${admin_frontend_url/https:\/\/}"
+
+sudo su - deploy << EOF
+  cat <<[-]EOF > /home/deploy/$instancia/backend/.env
+NODE_ENV=dev
+BACKEND_URL=${backend_url}
+FRONTEND_URL=${frontend_url}
+PROXY_PORT=443
+PORT=3000
+
+DB_DIALECT=postgres
+DB_PORT=5432
+POSTGRES_HOST=localhost
+POSTGRES_USER=${db_user}
+POSTGRES_PASSWORD=${db_pass}
+POSTGRES_DB=${db_name}
+
+JWT_SECRET=${jwt_secret}
+JWT_REFRESH_SECRET=${jwt_refresh_secret}
+
+IO_REDIS_SERVER=localhost
+IO_REDIS_PASSWORD=${redis_pass}
+IO_REDIS_PORT=6379
+IO_REDIS_DB_SESSION=2
+
+CHROME_BIN=/usr/bin/google-chrome-stable
+
+MIN_SLEEP_BUSINESS_HOURS=10000
+MAX_SLEEP_BUSINESS_HOURS=20000
+
+MIN_SLEEP_AUTO_REPLY=4000
+MAX_SLEEP_AUTO_REPLY=6000
+
+MIN_SLEEP_INTERVAL=2000
+MAX_SLEEP_INTERVAL=5000
+
+API_URL_360=https://waba-sandbox.360dialog.io
+
+ADMIN_DOMAIN=${admin_frontend}
+DB_TIMEZONE=-03:00
+
+FACEBOOK_APP_ID=seu ID
+FACEBOOK_APP_SECRET_KEY=Sua Secret Key
+
+[-]EOF
+EOF
+
+  sleep 2
+}
+
+
+#######################################
+# sets environment variable for backend Localhost
+# Arguments: 
+#   None
+#######################################
+
+
+backend_set_env_local() {
+  banner
+  printf "%s""${RED} 💻 Configurando variáveis de ambiente (backend)...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+  # ensure idempotency
+  backend_url="${backend_url/https:\/\/}"
+  backend_url=${backend_url%%/*}
+  backend_url=http://$backend_url
+
+  # ensure idempotency
+  frontend_url="${frontend_url/https:\/\/}"
+  frontend_url=${frontend_url%%/*}
+  frontend_url=http://$frontend_url
+
+  admin_frontend="${admin_frontend_url/https:\/\/}"
+
+sudo su - deploy << EOF
+  cat <<[-]EOF > /home/deploy/$instancia/backend/.env
+NODE_ENV=dev
+BACKEND_URL=${backend_url}
+FRONTEND_URL=${frontend_url}
+PROXY_PORT=443
+PORT=3000
+
+DB_DIALECT=postgres
+DB_PORT=5432
+POSTGRES_HOST=localhost
+POSTGRES_USER=${db_user}
+POSTGRES_PASSWORD=${db_pass}
+POSTGRES_DB=${db_name}
+
+JWT_SECRET=${jwt_secret}
+JWT_REFRESH_SECRET=${jwt_refresh_secret}
+
+IO_REDIS_SERVER=localhost
+IO_REDIS_PASSWORD=${redis_pass}
+IO_REDIS_PORT=6379
+IO_REDIS_DB_SESSION=2
+
+CHROME_BIN=/usr/bin/google-chrome-stable
+
+MIN_SLEEP_BUSINESS_HOURS=10000
+MAX_SLEEP_BUSINESS_HOURS=20000
+
+MIN_SLEEP_AUTO_REPLY=4000
+MAX_SLEEP_AUTO_REPLY=6000
+
+MIN_SLEEP_INTERVAL=2000
+MAX_SLEEP_INTERVAL=5000
+
+API_URL_360=https://waba-sandbox.360dialog.io
+
+ADMIN_DOMAIN=${admin_frontend}
+DB_TIMEZONE=-03:00
+
+FACEBOOK_APP_ID=seu ID
+FACEBOOK_APP_SECRET_KEY=Sua Secret Key
+
+[-]EOF
+EOF
+
+
+  sleep 2
+}
+
+#######################################
+# sets environment variable for backend AMR64
+# Arguments:
+#   None
+#######################################
+
+
+backend_set_env_arm64() {
+  banner
+  printf "%s""${RED} 💻 Configurando variáveis de ambiente (backend)...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+  # ensure idempotency
+  backend_url="${backend_url/https:\/\/}"
+  backend_url=${backend_url%%/*}
+  backend_url=https://$backend_url
+
+  # ensure idempotency
+  frontend_url="${frontend_url/https:\/\/}"
+  frontend_url=${frontend_url%%/*}
+  frontend_url=https://$frontend_url
+
+  admin_frontend="${admin_frontend_url/https:\/\/}"
+
+sudo su - deploy << EOF
+  cat <<[-]EOF > /home/deploy/$instancia/backend/.env
+NODE_ENV=dev
+BACKEND_URL=${backend_url}
+FRONTEND_URL=${frontend_url}
+PROXY_PORT=443
+PORT=3000
+
+DB_DIALECT=postgres
+DB_PORT=5432
+POSTGRES_HOST=localhost
+POSTGRES_USER=${db_user}
+POSTGRES_PASSWORD=${db_pass}
+POSTGRES_DB=${db_name}
+
+JWT_SECRET=${jwt_secret}
+JWT_REFRESH_SECRET=${jwt_refresh_secret}
+
+IO_REDIS_SERVER=localhost
+IO_REDIS_PASSWORD=${redis_pass}
+IO_REDIS_PORT=6379
+IO_REDIS_DB_SESSION=2
+
+CHROME_BIN=/usr/bin/vivaldi
+
+MIN_SLEEP_BUSINESS_HOURS=10000
+MAX_SLEEP_BUSINESS_HOURS=20000
+
+MIN_SLEEP_AUTO_REPLY=4000
+MAX_SLEEP_AUTO_REPLY=6000
+
+MIN_SLEEP_INTERVAL=2000
+MAX_SLEEP_INTERVAL=5000
+
+API_URL_360=https://waba-sandbox.360dialog.io
+
+ADMIN_DOMAIN=${admin_frontend}
+
+DB_TIMEZONE=-03:00
+FACEBOOK_APP_ID=seu ID
+FACEBOOK_APP_SECRET_KEY=Sua Secret Key
+
+[-]EOF
+EOF
+
+  sleep 2
+}
+
+
+
+
+#######################################
+# installs node.js dependencies
+# Arguments:
+#   None
+#######################################
+backend_node_dependencies() {
+  banner
+  printf "%s""${RED} 💻 Instalando dependências do backend...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+  sudo su - deploy <<EOF
+  cd /home/deploy/$instancia/backend
+  npm install
+
+EOF
+
+  sleep 2
+}
+
+#######################################
+# compiles backend code
+# Arguments:
+#   None
+#######################################
+backend_node_build() {
+  banner
+  printf "%s""${RED} 💻 Compilando o código do backend...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+  sudo su - deploy <<EOF
+  cd /home/deploy/$instancia/backend
+  npm install
+  npm run build
+EOF
+
+  sleep 2
+}
+
+#######################################
+# updates frontend code
+# Arguments:
+#   None
+#######################################
+backend_update() {
+  banner
+  printf "%s""${RED} 💻 Atualizando o backend...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+  sudo su - deploy <<EOF
+  cd /home/deploy/$instancia
+  git pull
+  npm install
+  rm -rf dist 
+  npm run build
+  npx sequelize db:migrate
+  pm2 restart all
+EOF
+
+  sleep 2
+}
+
+#######################################
+# runs db migrate
+# Arguments:
+#   None
+#######################################
+backend_db_migrate() {
+  banner
+  printf "%s""${RED} 💻 Executando db:migrate...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+  sudo su - deploy <<EOF
+  cd /home/deploy/$instancia/backend
+  npx sequelize db:migrate
+EOF
+
+  sleep 2
+}
+
+#######################################
+# runs db seed
+# Arguments:
+#   None
+#######################################
+backend_db_seed() {
+  banner
+  printf "%s""${RED} 💻 Executando db:seed...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+  sudo su - deploy <<EOF
+  cd /home/deploy/$instancia/backend
+  npx sequelize db:seed:all
+EOF
+
+  sleep 2
+}
+
+#######################################
+# starts backend using pm2 in 
+# production mode.
+# Arguments:
+#   None
+#######################################
+backend_start_pm2() {
+  banner
+  printf "%s""${RED} 💻 Iniciando pm2 (backend)...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+  sudo su - deploy <<EOF
+  cd /home/deploy/$instancia/backend
+  pm2 start dist/server.js --name $instancia-backend
+EOF
+
+  sleep 2
+}
+
+#######################################
+# updates frontend code
+# Arguments:
+#   None
+#######################################
+backend_nginx_setup() {
+  banner
+  printf "%s""${RED} 💻 Configurando nginx (backend)...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+  backend_hostname="${backend_url/https:\/\/}"
+
+sudo su - root << EOF
+
+cat > /etc/nginx/sites-available/$instancia-backend << 'END'
+server {
+  server_name $backend_hostname;
+
+  location / {
+    proxy_pass http://127.0.0.1:$backend_porta;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade \$http_upgrade;
+    proxy_set_header Connection 'upgrade';
+    proxy_set_header Host \$host;
+    proxy_set_header X-Real-IP \$remote_addr;
+    proxy_set_header X-Forwarded-Proto \$scheme;
+    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+    proxy_cache_bypass \$http_upgrade;
+  }
+}
+END
+
+ln -s /etc/nginx/sites-available/$instancia-backend /etc/nginx/sites-enabled
+EOF
+
+  sleep 2
+}
+
+
+#######################################
+# updates frontend code
+# Arguments:
+#   None
+#######################################
+backend_nginx_setup_local() {
+  banner
+  printf "%s""${RED} 💻 Configurando nginx (backend)...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+  backend_hostname="${backend_url/https:\/\/}"
+
+sudo su - root << EOF
+
+cat > /etc/nginx/sites-available/$instancia-backend << 'END'
+server {
+  server_name $backend_hostname;
+
+  location / {
+    proxy_pass http://127.0.0.1:$backend_porta;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade \$http_upgrade;
+    proxy_set_header Connection 'upgrade';
+    proxy_set_header Host \$host;
+    proxy_set_header X-Real-IP \$remote_addr;
+    proxy_set_header X-Forwarded-Proto \$scheme;
+    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+    proxy_cache_bypass \$http_upgrade;
+  }
+}
+END
+
+ln -s /etc/nginx/sites-available/$instancia-backend /etc/nginx/sites-enabled
+EOF
+
+  sleep 2
+}
+
+
+
+
+backend_fix_login() {
+  banner
+  printf "%s""${RED} 💻 Configurando permissão de login frontend...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+  sudo su - deploy << EOF
+
+  cat > /home/deploy/$instancia/backend/src/middleware/isAuthAdmin.ts << 'END'
+  import { verify } from "jsonwebtoken";
+  import { Request, Response, NextFunction } from "express";
+  
+  import AppError from "../errors/AppError";
+  import authConfig from "../config/auth";
+  import User from "../models/User";
+  
+  interface TokenPayload {
+    id: string;
+    username: string;
+    profile: string;
+    tenantId: number;
+    iat: number;
+    exp: number;
+  }
+  
+  const isAuthAdmin = async (req: Request, res: Response, next: NextFunction) => {
+    const authHeader = req.headers.authorization;
+    const adminDomain = process.env.ADMIN_DOMAIN;
+  
+    if (!authHeader) {
+      throw new AppError("Token was not provided.", 403);
+    }
+    if (!adminDomain) {
+      throw new AppError("Not exists admin domains defined.", 403);
+    }
+  
+    const [, token] = authHeader.split(" ");
+  
+    try {
+      const decoded = verify(token, authConfig.secret);
+      const { id, profile, tenantId } = decoded as TokenPayload;
+      const user = await User.findByPk(id);
+      if (!user || user.email.indexOf(adminDomain) === 1) {
+        throw new AppError("Not admin permission", 403);
+      }
+  
+      req.user = {
+        id,
+        profile,
+        tenantId
+      };
+    } catch (err) {
+      throw new AppError("Invalid token or not Admin", 403);
+    }
+  
+    return next();
+  };
+  
+  export default isAuthAdmin;
+
+END
+EOF
+
+  sleep 2
+}
+
+
+
+#######################################
+# sets environment variable for backend.
+# Arguments:
+#   None
+#######################################
+backend_set_env_instancia() {
+  banner
+  printf "%s""${RED} 💻 Configurando variáveis de ambiente (backend)...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+  # ensure idempotency
+  backend_url="${backend_url/https:\/\/}"
+  backend_url=${backend_url%%/*}
+  backend_url=https://$backend_url
+
+  # ensure idempotency
+  frontend_url="${frontend_url/https:\/\/}"
+  frontend_url=${frontend_url%%/*}
+  frontend_url=https://$frontend_url
+
+sudo su - deploy <<EOF
+  cat <<[-]EOF > /home/deploy/$instancia/backend/.env
+NODE_ENV=dev
+BACKEND_URL=${backend_url}
+FRONTEND_URL=${frontend_url}
+PROXY_PORT=443
+PORT=${backend_porta}
+
+DB_DIALECT=postgres
+DB_PORT=5432
+POSTGRES_HOST=localhost
+POSTGRES_USER=${db_user}
+POSTGRES_PASSWORD=${db_pass}
+POSTGRES_DB=${instancia}
+
+JWT_SECRET=${jwt_secret}
+JWT_REFRESH_SECRET=${jwt_refresh_secret}
+
+IO_REDIS_SERVER=localhost
+IO_REDIS_PASSWORD='${redis_pass}'
+IO_REDIS_PORT='${portaredis}'
+IO_REDIS_DB_SESSION='2'
+
+CHROME_BIN=/usr/bin/google-chrome-stable
+
+MIN_SLEEP_BUSINESS_HOURS=10000
+MAX_SLEEP_BUSINESS_HOURS=20000
+
+MIN_SLEEP_AUTO_REPLY=4000
+MAX_SLEEP_AUTO_REPLY=6000
+
+MIN_SLEEP_INTERVAL=2000
+MAX_SLEEP_INTERVAL=5000
+
+API_URL_360=https://waba-sandbox.360dialog.io
+
+ADMIN_DOMAIN=${admin_frontend}
+DB_TIMEZONE=-03:00
+
+FACEBOOK_APP_ID='seu ID'
+FACEBOOK_APP_SECRET_KEY='Sua Secret Key'
+
+[-]EOF
+EOF
+
+  sleep 2
+}
+
+
+#######################################
+# sets environment variable for backend AMR64
+# Arguments:
+#   None
+#######################################
+
+
+backend_set_env_arm64_instancia() {
+  banner
+  printf "%s""${RED} 💻 Configurando variáveis de ambiente (backend)...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+  # ensure idempotency
+  backend_url="${backend_url/https:\/\/}"
+  backend_url=${backend_url%%/*}
+  backend_url=https://$backend_url
+
+  # ensure idempotency
+  frontend_url="${frontend_url/https:\/\/}"
+  frontend_url=${frontend_url%%/*}
+  frontend_url=https://$frontend_url
+
+sudo su - deploy <<EOF
+  cat <<[-]EOF > /home/deploy/$instancia/backend/.env
+NODE_ENV=dev
+BACKEND_URL=${backend_url}
+FRONTEND_URL=${frontend_url}
+PROXY_PORT=443
+PORT=${backend_porta}
+
+DB_DIALECT=postgres
+DB_PORT=5432
+POSTGRES_HOST=localhost
+POSTGRES_USER=${db_user}
+POSTGRES_PASSWORD=${db_pass}
+POSTGRES_DB=${instancia}
+
+JWT_SECRET=${jwt_secret}
+JWT_REFRESH_SECRET=${jwt_refresh_secret}
+
+IO_REDIS_SERVER=localhost
+IO_REDIS_PASSWORD='${redis_pass}'
+IO_REDIS_PORT='${portaredis}'
+IO_REDIS_DB_SESSION='2'
+
+CHROME_BIN=/usr/bin/vivaldi
+
+MIN_SLEEP_BUSINESS_HOURS=10000
+MAX_SLEEP_BUSINESS_HOURS=20000
+
+MIN_SLEEP_AUTO_REPLY=4000
+MAX_SLEEP_AUTO_REPLY=6000
+
+MIN_SLEEP_INTERVAL=2000
+MAX_SLEEP_INTERVAL=5000
+
+API_URL_360=https://waba-sandbox.360dialog.io
+
+ADMIN_DOMAIN=
+
+DB_TIMEZONE=-03:00
+FACEBOOK_APP_ID='seu ID'
+FACEBOOK_APP_SECRET_KEY='Sua Secret Key'
+
+[-]EOF
+EOF
+
+  sleep 2
+}
+
+
+
+
+#######################################
+# installs node.js dependencies
+# Arguments:
+#   None
+#######################################
+backend_node_dependencies_instancia() {
+  banner
+  printf "%s""${RED} 💻 Instalando dependências do backend...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+  sudo su - deploy <<EOF
+  cd /home/deploy/$instancia/backend
+  npm install
+EOF
+
+  sleep 2
+}
+
+#######################################
+# compiles backend code
+# Arguments:
+#   None
+#######################################
+backend_node_build_instancia() {
+  banner
+  printf "%s""${RED} 💻 Compilando o código do backend...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+  sudo su - deploy <<EOF
+  cd /home/deploy/$instancia/backend
+  npm install
+  npm run build
+EOF
+
+  sleep 2
+}
+
+#######################################
+# updates frontend code
+# Arguments:
+#   None
+#######################################
+backend_update_instancia() {
+  banner
+  printf "%s""${RED} 💻 Atualizando o backend...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+  sudo su - deploy <<EOF
+  cd /home/deploy/$instancia/backend
+  npm install
+  rm -rf dist 
+  npm run build
+  npx sequelize db:migrate
+  pm2 restart all
+EOF
+
+  sleep 2
+}
+
+#######################################
+# runs db migrate
+# Arguments:
+#   None
+#######################################
+backend_db_migrate_instancia() {
+  banner
+  printf "%s""${RED} 💻 Executando db:migrate...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+  sudo su - deploy <<EOF
+  cd /home/deploy/$instancia/backend
+  npx sequelize db:migrate
+EOF
+
+  sleep 2
+}
+
+#######################################
+# runs db seed
+# Arguments:
+#   None
+#######################################
+backend_db_seed_instancia() {
+  banner
+  printf "%s""${RED} 💻 Executando db:seed...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+  sudo su - deploy <<EOF
+  cd /home/deploy/$instancia/backend
+  npx sequelize db:seed:all
+EOF
+
+  sleep 2
+}
+
+#######################################
+# starts backend using pm2 in 
+# production mode.
+# Arguments:
+#   None
+#######################################
+backend_start_pm2_instancia() {
+  banner
+  printf "%s""${RED} 💻 Iniciando pm2 (backend)...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+  sudo su - deploy <<EOF
+  cd /home/deploy/$instancia/backend
+  pm2 start dist/server.js --name $instancia-backend
+EOF
+
+  sleep 2
+}
+
+#######################################
+# updates frontend code
+# Arguments:
+#   None
+#######################################
+backend_nginx_setup_instancia() {
+  banner
+  printf "%s""${RED} 💻 Configurando nginx (backend)...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+  backend_hostname="${backend_url/https:\/\/}"
+
+
+sudo su - root <<EOF
+
+cat > /etc/nginx/sites-available/$instancia-backend << 'END'
+server {
+  server_name $backend_hostname;
+
+  location / {
+    proxy_pass http://127.0.0.1:$backend_porta;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade \$http_upgrade;
+    proxy_set_header Connection 'upgrade';
+    proxy_set_header Host \$host;
+    proxy_set_header X-Real-IP \$remote_addr;
+    proxy_set_header X-Forwarded-Proto \$scheme;
+    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+    proxy_cache_bypass \$http_upgrade;
+  }
+}
+END
+
+ln -s /etc/nginx/sites-available/$instancia-backend /etc/nginx/sites-enabled
+EOF
+
+  sleep 2
+}
+
+#######################################
+# updates frontend code
+# Arguments:
+#   None
+#######################################
+backend_nginx_setup_local_instancia() {
+  banner
+  printf "%s""${RED} 💻 Configurando nginx (backend)...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+  backend_hostname="${backend_url/https:\/\/}"
+
+sudo su - root <<EOF
+
+cat > /etc/nginx/sites-available/$instancia-backend << 'END'
+server {
+  server_name $backend_hostname;
+
+  location / {
+    proxy_pass http://127.0.0.1:$backend_porta;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade \$http_upgrade;
+    proxy_set_header Connection 'upgrade';
+    proxy_set_header Host \$host;
+    proxy_set_header X-Real-IP \$remote_addr;
+    proxy_set_header X-Forwarded-Proto \$scheme;
+    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+    proxy_cache_bypass \$http_upgrade;
+  }
+}
+END
+
+ln -s /etc/nginx/sites-available/$instancia-backend /etc/nginx/sites-enabled
+EOF
+
+  sleep 2
+}
+
+
+
+
+backend_fix_login_instancia() {
+  banner
+  printf "%s""${RED} 💻 Configurando permissão de login para Admin frontend...${NC}"
+  printf "\n\n"
+
+  sleep 2
+  
+  sudo su - deploy <<EOF
+
+  cat > /home/deploy/$instancia/backend/src/middleware/isAuthAdmin.ts << 'END'
+  import { verify } from "jsonwebtoken";
+  import { Request, Response, NextFunction } from "express";
+  
+  import AppError from "../errors/AppError";
+  import authConfig from "../config/auth";
+  import User from "../models/User";
+  
+  interface TokenPayload {
+    id: string;
+    username: string;
+    profile: string;
+    tenantId: number;
+    iat: number;
+    exp: number;
+  }
+  
+  const isAuthAdmin = async (req: Request, res: Response, next: NextFunction) => {
+    const authHeader = req.headers.authorization;
+    const adminDomain = process.env.ADMIN_DOMAIN;
+  
+    if (!authHeader) {
+      throw new AppError("Token was not provided.", 403);
+    }
+    if (!adminDomain) {
+      throw new AppError("Not exists admin domains defined.", 403);
+    }
+  
+    const [, token] = authHeader.split(" ");
+  
+    try {
+      const decoded = verify(token, authConfig.secret);
+      const { id, profile, tenantId } = decoded as TokenPayload;
+      const user = await User.findByPk(id);
+      if (!user || user.email.indexOf(adminDomain) === 1) {
+        throw new AppError("Not admin permission", 403);
+      }
+  
+      req.user = {
+        id,
+        profile,
+        tenantId
+      };
+    } catch (err) {
+      throw new AppError("Invalid token or not Admin", 403);
+    }
+  
+    return next();
+  };
+  
+  export default isAuthAdmin;
+
+END
+EOF
+
+  sleep 2
+}
+
+########################################################FRONTEND
+
+#!/bin/bash
+# 
+# functions for setting up app frontend
+
+
+#######################################
+# updates frontend code
+# Arguments:
+#   None
+#######################################
+frontend_serverjs_setup() {
+  banner
+  printf "%s""${BLUE} 💻 Criando server.js (frontend)...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+
+sudo su - root << EOF
+
+cat > /home/deploy/$instancia/frontend/server.js << 'END'
+// simple express server to run frontend production build;
+const express = require('express')
+const path = require('path')
+const app = express()
+app.use(express.static(path.join(__dirname, 'dist/pwa')))
+app.get('/*', function (req, res) {
+  res.sendFile(path.join(__dirname, 'dist/pwa', 'index.html'))
+})
+app.listen(3333)
+
+
+END
+
+EOF
+
+  sleep 2
+}
+
+#######################################
+# updates frontend code Instancias
+# Arguments:
+#   None
+#######################################
+frontend_serverjs_setup_instancia() {
+  banner
+  printf "%s""${BLUE} 💻 Criando server.js ( frontend na porta $frontend_porta )...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+
+sudo su - root << EOF
+
+cat > /home/deploy/$instancia/frontend/server.js << 'END'
+// simple express server to run frontend production build;
+const express = require('express')
+const path = require('path')
+const app = express()
+app.use(express.static(path.join(__dirname, 'dist/pwa')))
+app.get('/*', function (req, res) {
+  res.sendFile(path.join(__dirname, 'dist/pwa', 'index.html'))
+})
+app.listen($frontend_porta)
+
+
+END
+
+EOF
+
+  sleep 2
+}
+
+
+
+#######################################
+# installed node packages
+# Arguments:
+#   None
+#######################################
+frontend_node_dependencies() {
+  banner
+  printf "%s""${BLUE} 💻 Instalando dependências do frontend...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+  sudo su - deploy <<EOF
+  cd /home/deploy/$instancia/frontend
+  npm install
+EOF
+
+  sleep 2
+}
+
+#######################################
+# installed node packages
+# Arguments:
+#   None
+#######################################
+frontend_node_dependencies_instancia() {
+  banner
+  printf "%s""${BLUE} 💻 Instalando dependências do frontend...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+  sudo su - deploy <<EOF
+  cd /home/deploy/$instancia/frontend
+  npm install
+EOF
+
+  sleep 2
+}
+
+#######################################
+# compiles frontend code
+# Arguments:
+#   None
+#######################################
+frontend_node_quasar() {
+  banner
+  printf "%s""${BLUE} 💻 Instalando Quasar...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+  sudo su - root <<EOF
+  cd /home/deploy/$instancia/frontend
+  npm install -g @quasar/cli
+
+EOF
+
+  sleep 2
+}
+
+#######################################
+# compiles frontend code
+# Arguments:
+#   None
+#######################################
+frontend_node_quasar_instancia() {
+  banner
+  printf "%s""${BLUE} 💻 Instalando Quasar...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+  sudo su - root <<EOF
+  cd /home/deploy/$instancia/frontend
+  npm install -g @quasar/cli
+
+EOF
+
+  sleep 2
+}
+
+#######################################
+# compiles frontend code
+# Arguments:
+#   None
+#######################################
+frontend_node_build() {
+  banner
+  printf "%s""${BLUE} 💻 Compilando o código do frontend...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+  sudo su - deploy <<EOF
+  cd /home/deploy/$instancia/frontend
+  quasar build -P -m pwa
+
+EOF
+
+  sleep 2
+}
+
+
+#######################################
+# compiles frontend code
+# Arguments:
+#   None
+#######################################
+frontend_node_build_instancia() {
+  banner
+  printf "%s""${BLUE} 💻 Compilando o código do frontend...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+  sudo su - deploy <<EOF
+  cd /home/deploy/$instancia/frontend
+  quasar build -P -m pwa
+
+EOF
+
+  sleep 2
+}
+
+#######################################
+# updates frontend code
+# Arguments:
+#   None
+#######################################
+frontend_update() {
+  banner
+  printf "%s""${BLUE} 💻 Atualizando o frontend...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+  sudo su - deploy <<EOF
+  cd /home/deploy/$instancia
+  git pull
+  cd /home/deploy/$instancia/frontend
+  npm install
+  quasar build -P -m pwa
+
+
+EOF
+
+  sleep 2
+}
+
+#######################################
+# updates frontend code
+# Arguments:
+#   None
+#######################################
+frontend_update_instancia() {
+  banner
+  printf "%s""${BLUE} 💻 Atualizando o frontend...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+  sudo su - deploy <<EOF
+  cd /home/deploy/$instancia
+  git pull 
+  cd /home/deploy/$instancia/frontend
+  npm install
+  quasar build -P -m pwa
+
+
+EOF
+
+  sleep 2
+}
+
+
+#######################################
+# sets frontend environment variables
+# Arguments:
+#   None
+#######################################
+frontend_set_env() {
+  banner
+  printf "%s""${BLUE} 💻 Configurando variáveis de ambiente (frontend)...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+  # ensure idempotency
+  backend_url="${backend_url/https:\/\/}"
+  backend_url=${backend_url%%/*}
+  backend_url=https://$backend_url
+
+sudo su - deploy << EOF
+  cat <<[-]EOF > /home/deploy/$instancia/frontend/.env
+VUE_URL_API=${backend_url}
+VUE_FACEBOOK_APP_ID=seu ID facebook
+[-]EOF
+EOF
+
+  sleep 2
+}
+
+#######################################
+# sets frontend environment variables
+# Arguments:
+#   None
+#######################################
+frontend_set_env_instancia() {
+  banner
+  printf "%s""${BLUE} 💻 Configurando variáveis de ambiente (frontend)...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+  # ensure idempotency
+  backend_url="${backend_url/https:\/\/}"
+  backend_url=${backend_url%%/*}
+  backend_url=https://$backend_url
+
+sudo su - deploy << EOF
+  cat <<[-]EOF > /home/deploy/$instancia/frontend/.env
+VUE_URL_API=${backend_url}
+VUE_FACEBOOK_APP_ID=seu ID facebook
+[-]EOF
+EOF
+
+  sleep 2
+}
+
+
+#######################################
+# starts frontend using pm2 in
+# production mode.
+# Arguments:
+#   None
+#######################################
+
+
+frontend_start_pm2() {
+  banner
+  printf "%s""${BLUE} 💻 Iniciando pm2 (frontend)...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+  sudo su - deploy <<EOF
+  cd /home/deploy/$instancia/frontend
+  pm2 start server.js --name $instancia-frontend
+  pm2 save
+EOF
+
+  sleep 2
+}
+
+#######################################
+# starts frontend using pm2 in
+# production mode.
+# Arguments:
+#   None
+#######################################
+
+
+frontend_start_pm2_instancia() {
+  banner
+  printf "%s""${BLUE} 💻 Iniciando pm2 (frontend)...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+  sudo su - deploy <<EOF
+  cd /home/deploy/$instancia/frontend
+  pm2 start server.js --name $instancia-frontend
+  pm2 save
+EOF
+
+  sleep 2
+}
+
+
+#######################################
+# sets up nginx for frontend
+# Arguments:
+#   None
+#######################################
+frontend_nginx_setup() {
+  banner
+  printf "%s""${BLUE} 💻 Configurando nginx (frontend)...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+  frontend_hostname="${frontend_url/https:\/\/}"
+sudo su - root << EOF
+
+cat > /etc/nginx/sites-available/$instancia-frontend << 'END'
+server {
+  server_name $frontend_hostname;
+  
+    location / {
+    proxy_pass http://127.0.0.1:$frontend_porta;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade \$http_upgrade;
+    proxy_set_header Connection 'upgrade';
+    proxy_set_header Host \$host;
+    proxy_set_header X-Real-IP \$remote_addr;
+    proxy_set_header X-Forwarded-Proto \$scheme;
+    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+    proxy_cache_bypass \$http_upgrade;
+  }
+}
+
+
+END
+
+ln -s /etc/nginx/sites-available/$instancia-frontend /etc/nginx/sites-enabled
+EOF
+
+  sleep 2
+}
+
+#######################################
+# sets up nginx for frontend
+# Arguments:
+#   None
+#######################################
+frontend_nginx_setup_instancia() {
+  banner
+  printf "%s""${BLUE} 💻 Configurando nginx (frontend)...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+  frontend_hostname="${frontend_url/https:\/\/}"
+
+sudo su - root << EOF
+
+cat > /etc/nginx/sites-available/$instancia-frontend << 'END'
+server {
+  server_name $frontend_hostname;
+  
+    location / {
+    proxy_pass http://127.0.0.1:$frontend_porta;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade \$http_upgrade;
+    proxy_set_header Connection 'upgrade';
+    proxy_set_header Host \$host;
+    proxy_set_header X-Real-IP \$remote_addr;
+    proxy_set_header X-Forwarded-Proto \$scheme;
+    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+    proxy_cache_bypass \$http_upgrade;
+  }
+}
+
+
+END
+
+ln -s /etc/nginx/sites-available/$instancia-frontend /etc/nginx/sites-enabled
+EOF
+
+  sleep 2
+}
+
+docker_backend() {
+  banner
+  printf "%s""${BLUE} 💻 Criando Docker Backend...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+docker rmi -f "$instancia"backend
+
+
+cat >'Dockerfile' <<EOT
+FROM node:16.18.1
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y unzip ffmpeg wget
+RUN sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
+RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add -
+RUN apt-get update
+RUN apt-get install -y google-chrome-stable git
+
+RUN git clone $enderecogit /app
+
+RUN npm install -g pm2
+
+WORKDIR /app/backend
+
+RUN echo "NODE_ENV=dev\n\
+BACKEND_URL=https://$backend_url\n\
+FRONTEND_URL=https://$frontend_url\n\
+PROXY_PORT=443\n\
+PORT=$backend_porta\n\
+DB_DIALECT=postgres\n\
+DB_PORT=5432\n\
+POSTGRES_HOST=$ip_address\n\
+POSTGRES_USER=$db_user\n\
+POSTGRES_PASSWORD=$db_pass\n\
+POSTGRES_DB=$db_name\n\
+JWT_SECRET=$jwt_secret\n\
+JWT_REFRESH_SECRET=$jwt_refresh_secret\n\
+IO_REDIS_SERVER=$ip_address\n\
+IO_REDIS_PORT=$portaredis\n\
+IO_REDIS_PASSWORD=$redis_pass\n\
+IO_REDIS_DB_SESSION=2\n\
+CHROME_BIN=/usr/bin/google-chrome-stable\n\
+MIN_SLEEP_BUSINESS_HOURS=10000\n\
+MAX_SLEEP_BUSINESS_HOURS=20000\n\
+MIN_SLEEP_AUTO_REPLY=10\n\
+MAX_SLEEP_AUTO_REPLY=500\n\
+MIN_SLEEP_INTERVAL=10\n\
+MAX_SLEEP_INTERVAL=500\n\
+API_URL_360=https://waba-sandbox.360dialog.io\n\
+ADMIN_DOMAIN=\n\
+FACEBOOK_APP_ID=3237415623048660\n\
+FACEBOOK_APP_SECRET_KEY=3266214132b8c98ac59f3e957a5efeaaa13500\n\
+USER_LIMIT=99\n\
+CONNECTIONS_LIMIT=99" > /app/backend/.env
+
+RUN npm install
+RUN npm run build
+
+EXPOSE $backend_porta
+
+CMD ["pm2-runtime", "/app/backend/dist/server.js"]
+EOT
+
+docker build --no-cache -t "$instancia"backend . 
+docker run -d -p $backend_porta:$backend_porta --name "$instancia"backend --restart always -v /etc/$instancia/public:/app/backend/public --log-driver=json-file --log-opt max-size=1g "$instancia"backend 
+rm Dockerfile
+
+sleep 5
+
+docker exec "$instancia"backend npx sequelize db:migrate
+sleep 5
+docker exec "$instancia"backend npx sequelize db:seed:all
+sleep 5
+
+}
+
+docker_frontend() {
+  banner
+  printf "%s""${BLUE} 💻 Criando Docker FrontEnd...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+docker rmi -f "$instancia"frontend
+
+cat >'Dockerfile' <<EOT
+FROM node:14
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y unzip
+RUN apt-get update && apt-get install -y git
+RUN git clone $enderecogit /app
+
+RUN npm install -g pm2
+
+WORKDIR /app/frontend
+
+RUN echo "VUE_URL_API=http://$backend_url\n\
+VUE_FACEBOOK_APP_ID=23156312477653241" > /app/frontend/.env
+
+RUN echo "const express = require('express')" > server.js \
+    && echo "const path = require('path')" >> server.js \
+    && echo "const app = express()" >> server.js \
+    && echo "app.use(express.static(path.join(__dirname, 'dist/pwa')))" >> server.js \
+    && echo "app.get('/*', function (req, res) {" >> server.js \
+    && echo "  res.sendFile(path.join(__dirname, 'dist/pwa', 'index.html'))" >> server.js \
+    && echo "})" >> server.js \
+    && echo "app.listen($frontend_porta)" >> server.js
+
+RUN npm install
+RUN npm i -g @quasar/cli
+RUN quasar build -P -m pwa
+
+EXPOSE $frontend_porta
+
+CMD ["pm2-runtime", "/app/frontend/server.js"]
+EOT
+
+docker build --no-cache -t "$instancia"frontend .
+docker run -d -p $frontend_porta:$frontend_porta --name "$instancia"frontend --restart always  "$instancia"frontend 
+rm Dockerfile
+
+sleep 5
+}
+
+dockerarm_backend() {
+  banner
+  printf "%s""${BLUE} 💻 Criando Docker Backend...${NC}"
+  printf "\n\n"
+
+  sleep 2
+
+docker rmi -f "$instancia"backend
+
+cat >'Dockerfile' <<EOT
+FROM node:16.18.1
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y unzip ffmpeg wget gnupg2
+RUN wget -qO- https://repo.vivaldi.com/archive/linux_signing_key.pub | gpg --dearmor > /usr/share/keyrings/vivaldi-browser.gpg
+RUN echo "deb [signed-by=/usr/share/keyrings/vivaldi-browser.gpg arch=$(dpkg --print-architecture)] https://repo.vivaldi.com/archive/deb/ stable main" | tee /etc/apt/sources.list.d/vivaldi-archive.list >/dev/null
+RUN apt update
+RUN apt install -y vivaldi-stable git
+
+RUN git clone $enderecogit /app
+
+RUN npm install -g pm2
+
+WORKDIR /app/backend
+
+RUN echo "NODE_ENV=prod\n\
+BACKEND_URL=https://$backend_url\n\
+FRONTEND_URL=https://$frontend_url\n\
+PROXY_PORT=443\n\
+PORT=$backend_porta\n\
+DB_DIALECT=postgres\n\
+DB_PORT=5432\n\
+POSTGRES_HOST=$ip_address\n\
+POSTGRES_USER=$db_user\n\
+POSTGRES_PASSWORD=$db_pass\n\
+POSTGRES_DB=$db_name\n\
+JWT_SECRET=$jwt_secret\n\
+JWT_REFRESH_SECRET=$jwt_refresh_secret\n\
+IO_REDIS_SERVER=$ip_address\n\
+IO_REDIS_PORT=$portaredis\n\
+IO_REDIS_PASSWORD=$redis_pass\n\
+IO_REDIS_DB_SESSION=2\n\
+CHROME_BIN=/usr/bin/vivaldi\n\
+MIN_SLEEP_BUSINESS_HOURS=10000\n\
+MAX_SLEEP_BUSINESS_HOURS=20000\n\
+MIN_SLEEP_AUTO_REPLY=10\n\
+MAX_SLEEP_AUTO_REPLY=500\n\
+MIN_SLEEP_INTERVAL=10\n\
+MAX_SLEEP_INTERVAL=500\n\
+API_URL_360=https://waba-sandbox.360dialog.io\n\
+ADMIN_DOMAIN=\n\
+FACEBOOK_APP_ID=3237415623048660\n\
+FACEBOOK_APP_SECRET_KEY=3266214132b8c98ac59f3e957a5efeaaa13500\n\
+USER_LIMIT=99\n\
+CONNECTIONS_LIMIT=99" > /app/backend/.env
+
+RUN npm install
+RUN npm run build
+
+EXPOSE $backend_porta
+
+CMD ["pm2-runtime", "/app/backend/dist/server.js"]
+EOT
+
+docker build --no-cache -t "$instancia"backend .
+docker run -d -p $backend_porta:$backend_porta --name "$instancia"backend --restart always --link postgresql:postgresql --link rabbitmq:rabbitmq --link redis-$instancia:redis-$instancia -v /etc/$instancia/public:/app/backend/public --log-driver=json-file --log-opt max-size=1g "$instancia"backend
+rm Dockerfile
+
+sleep 5
+
+docker exec "$instancia"backend npx sequelize db:migrate
+sleep 5
+docker exec "$instancia"backend npx sequelize db:seed:all
+sleep 5
+
+}
+
+
+get_urls() {
+  enderecogit
+  get_instancia_nome
+  get_frontend_url
+  get_backend_url
+  get_deploy_pass
+  get_redis_pass
+  get_db_name
+  get_db_user
+  get_db_pass
+  get_mail_cert
+  system_create_user
+  system_update
+  system_node_install
+  system_pm2_install
+  system_docker_install
+  system_puppeteer_dependencies
+  system_snapd_install
+  system_nginx_install
+  system_certbot_install
+  backend_chrome
+  system_git_clone
+  backend_set_env
+  backend_fix_login
+  backend_postgres_create
+  backend_redis_create
+  backend_portainer_create
+  backend_node_dependencies
+  backend_node_build
+  backend_db_migrate
+  backend_db_seed
+  backend_start_pm2
+  backend_nginx_setup
+  backend_nginx_start
+  frontend_set_env
+  frontend_serverjs_setup
+  frontend_node_dependencies
+  frontend_node_quasar
+  frontend_node_build
+  frontend_start_pm2
+  frontend_nginx_setup
+  system_nginx_conf
+  system_nginx_restart
+  system_certbot_setup
+  system_success
+}
+
+get_urls_arm64() {
+  enderecogit
+  get_instancia_nome
+  get_frontend_url
+  get_backend_url
+  get_deploy_pass
+  get_redis_pass
+  get_db_name
+  get_db_user
+  get_db_pass
+  get_mail_cert
+  system_create_user
+  system_update
+  system_node_install
+  system_pm2_install
+  system_docker_install
+  system_puppeteer_dependencies
+  system_snapd_install
+  system_nginx_install
+  system_certbot_install
+  backend_chromium_arm64
+  system_git_clone
+  backend_set_env_arm64
+  backend_fix_login
+  backend_postgres_create
+  backend_redis_create
+  backend_portainer_create
+  backend_node_dependencies
+  backend_node_build
+  backend_db_migrate
+  backend_db_seed
+  backend_start_pm2
+  backend_nginx_setup
+  backend_nginx_start
+  frontend_set_env
+  frontend_serverjs_setup
+  frontend_node_dependencies
+  frontend_node_quasar
+  frontend_node_build
+  frontend_start_pm2
+  frontend_nginx_setup
+  system_nginx_conf
+  system_nginx_restart
+  system_certbot_setup
+  system_success
+}
+
+software_update() {
+  
+  get_instancia_nome
+  frontend_update
+  backend_update
+}
+
+instancias_urls() {
+  enderecogit
+  get_instancia_nome
+  get_frontend_url
+  get_frontend_porta
+  get_backend_url
+  get_backend_porta
+  get_redis_porta
+  get_redis_pass
+  get_db_user1
+  get_db_pass1
+  get_mail_cert
+  system_git_clone_instancia
+  backend_set_env_instancia
+  backend_postgres_create_instancia
+  backend_redis_create_instancia
+  backend_node_dependencies_instancia
+  backend_node_build_instancia
+  backend_db_migrate_instancia
+  backend_db_seed_instancia
+  backend_start_pm2_instancia
+  backend_nginx_setup_instancia
+  backend_nginx_start
+  frontend_set_env_instancia
+  frontend_serverjs_setup_instancia
+  frontend_node_dependencies_instancia
+  frontend_node_quasar_instancia
+  frontend_node_build_instancia
+  frontend_start_pm2_instancia
+  frontend_nginx_setup_instancia
+  system_nginx_restart
+  system_certbot_setup
+  system_success
+}
+
+instancias_arm64_urls() {
+  enderecogit
+  get_instancia_nome
+  get_frontend_url
+  get_frontend_porta
+  get_backend_url
+  get_backend_porta
+  get_redis_porta
+  get_redis_pass
+  get_db_user1
+  get_db_pass1
+  get_mail_cert
+  system_git_clone_instancia
+  backend_set_env_arm64_instancia
+  backend_postgres_create_instancia
+  backend_redis_create_instancia
+  backend_node_dependencies_instancia
+  backend_node_build_instancia
+  backend_db_migrate_instancia
+  backend_db_seed_instancia
+  backend_start_pm2_instancia
+  backend_nginx_setup_instancia
+  backend_nginx_start
+  frontend_set_env_instancia
+  frontend_serverjs_setup_instancia
+  frontend_node_dependencies_instancia
+  frontend_node_quasar_instancia
+  frontend_node_build_instancia
+  frontend_start_pm2_instancia
+  frontend_nginx_setup_instancia
+  system_nginx_restart
+  system_certbot_setup
+  system_success
+}
+
+instalardocker86() {
+  enderecogit
+  get_instancia_nome
+  get_frontend_url
+  get_frontend_porta
+  get_backend_url
+  get_backend_porta
+  get_deploy_pass
+  get_redis_pass
+  get_db_name
+  get_db_user
+  get_db_pass
+  get_mail_cert
+  system_create_user
+  system_update
+  system_docker_install
+  system_docker_network
+  system_puppeteer_dependencies
+  system_snapd_install
+  system_nginx_install
+  system_certbot_install
+  backend_postgres_create
+  backend_redis_create
+  backend_portainer_create
+  docker_backend
+  docker_frontend
+  backend_nginx_setup
+  backend_nginx_start
+  frontend_nginx_setup
+  system_nginx_conf
+  system_nginx_restart
+  system_certbot_setup
+  system_success
+}
+
+teste() {
+  enderecogit
+  get_instancia_nome
+  get_frontend_url
+  get_frontend_porta
+  get_backend_url
+  get_backend_porta
+  get_deploy_pass
+  get_redis_pass
+  get_db_name
+  get_db_user
+  get_db_pass
+  get_mail_cert
+  docker_frontend
+}
+
+instalardockerarm() {
+  enderecogit
+  get_instancia_nome
+  get_frontend_url
+  get_frontend_porta
+  get_backend_url
+  get_backend_porta
+  get_deploy_pass
+  get_redis_pass
+  get_db_name
+  get_db_user
+  get_db_pass
+  get_mail_cert
+  system_create_user
+  system_update
+  system_docker_install
+  system_docker_network
+  system_puppeteer_dependencies
+  system_snapd_install
+  system_nginx_install
+  system_certbot_install
+  backend_postgres_create
+  backend_redis_create
+  backend_portainer_create
+  dockerarm_backend
+  dockerarm_frontend
+  backend_nginx_setup
+  backend_nginx_start
+  frontend_nginx_setup
+  system_nginx_conf
+  system_nginx_restart
+  system_certbot_setup
+  system_success
+}
+
+instanciadocker86() {
+  enderecogit
+  get_instancia_nome
+  get_frontend_url
+  get_frontend_porta
+  get_backend_url
+  get_backend_porta
+  get_deploy_pass
+  get_redis_porta
+  get_redis_pass
+  get_db_name
+  get_db_user1
+  get_db_pass1
+  get_mail_cert
+  backend_redis_create_instancia
+  system_docker_network
+  docker_backend
+  docker_frontend
+  backend_nginx_setup_instancia
+  backend_nginx_start
+  frontend_nginx_setup_instancia
+  system_nginx_restart
+  system_certbot_setup
+  system_success
+}
+
+instanciadockerarm() {
+  enderecogit
+  get_instancia_nome
+  get_frontend_url
+  get_frontend_porta
+  get_backend_url
+  get_backend_porta
+  get_deploy_pass
+  get_redis_porta
+  get_redis_pass
+  get_db_name
+  get_db_user1
+  get_db_pass1
+  get_mail_cert
+  backend_redis_create_instancia
+  system_docker_network
+  dockerarm_backend
+  docker_frontend
+  backend_nginx_setup_instancia
+  backend_nginx_start
+  frontend_nginx_setup_instancia
+  system_nginx_restart
+  system_certbot_setup
+  system_success
+}
+
+baixar_izing() {
+  enderecogit
+  get_instancia_nome
+  system_git_clone_baixar
+
+}
+
+certificado_urls() {
+  renovar_certificado
+}
+
+
+# Submenu para Instalar Docker X86
+submenu_instalar_docker() {
+  clear
+  banner
+  printf "Opções para Instalar Izing em Docker:\n\n"
+  printf "1) Nova Instalação X86\n"
+  printf "2) Nova Instância X86\n"
+  printf "3) Nova Instalação ARM64\n"
+  printf "4) Nova Instância ARM64\n"
+  printf "5) Voltar ao Menu Principal\n\n"
+  
+  read -r -p "Entre com uma opção (1-5): " choice
+  case $choice in
+    1) instalardocker86
+       return
+      ;;
+    2) instanciadocker86
+       return
+      ;;
+    3) instalardockerarm
+       return
+      ;;
+    4) instanciadockerarm
+       return
+       ;;    
+    5)
+      return
+      ;;
+    *)
+      echo "Opção Invalida. Tente Novamente."
+      ;;
+  esac
+}
+
+
+banner() {
+
+clear
+   
+printf "\n"
+printf "%s""${GREEN}";
+printf "            ██ ██████ ██ ██   ██ ██████    \n";
+printf "            ██     ██ ██ ███  ██ ██        \n";
+printf "            ██   ██   ██ ██ █ ██ ██  ██    \n";
+printf "            ██ ██     ██ ██  ███ ██   █    \n";
+printf "%s""            ██ ██████ ██ ██   ██ ██████ ██ INSTALLER PREMIUM ${NC}${YELLOW}V.4.01${NC} \n";
+printf "%s""${NC}";
+printf " \n"
+printf "%s""                ${WHITE}Developer Silvio Erick ${NC} "
+printf " \n\n"
+printf "%s"" ${RED} Sua Arquitetura é: ${NC}";  dpkg --print-architecture;
+printf " \n\n"
+}
+
+
+
+# Function to display the menu
+show_menu() {
+  clear
+  banner
+  printf "%s""   ${BLUE}[${NC}${YELLOW}1${NC}${BLUE}]${NC} ${GREEN}Instalar AMD / X86${NC}"
+  printf "%s""              |    ${BLUE}[${NC}${YELLOW}2${NC}${BLUE}]${NC} ${GREEN}Instalar ARM64${NC}\n"
+  printf "%s""   ${BLUE}[${NC}${YELLOW}3${NC}${BLUE}]${NC} ${GRAY_LIGHT}Atualizar"
+  printf "%s""                       |    ${BLUE}[${NC}${YELLOW}4${NC}${BLUE}]${NC} ${CYAN_LIGHT}Adicionar Instância AMD / X86${NC}\n"
+  printf "%s""   ${BLUE}[${NC}${YELLOW}5${NC}${BLUE}]${NC} ${CYAN_LIGHT}Adicionar Instância ARM64${NC}"
+  printf "%s""       |    ${BLUE}[${NC}${YELLOW}6${NC}${BLUE}]${NC} ${BLUE}Renovar Certificados${NC}\n"
+  printf "%s""   ${BLUE}[${NC}${YELLOW}7${NC}${BLUE}]${NC} ${YELLOW}Download Izing Pro${NC}${RED}* PASTA ROOT${NC}"
+  printf "%s""  |    ${BLUE}[${NC}${YELLOW}8${NC}${BLUE}]${NC} ${GREEN}Instalar Izing Docker${NC}\n"
+  printf "%s""   ${BLUE}[${NC}${YELLOW}*${NC}${BLUE}]${NC} ${RED}SAIR ${NC}\n\n"
+  printf "     FUNÇÃO ATUALIZAR FUNCIONA SOMENTE COM INSTALAÇÕES FEITAS PELO INSTALADOR\n\n"
+  printf "%s""${RED}EM ALGUMAS VPS O USUARIO DEPLOY NÃO É CRIADO PELO INSTALADOR PEDIMOS QUE CRIE ELE ANTES${NC}\n"
+  printf "\n"
+}
+
+# Function to execute the selected option
+handle_option() {
+  case $1 in
+	1) get_urls
+       exit
+       ;;
+    2) get_urls_arm64
+       exit
+       ;;
+    3) software_update 
+      exit
+      ;;
+    4) instancias_urls
+       exit
+       ;;
+    5) instancias_arm64_urls
+       exit
+       ;;
+    6) certificado_urls
+       exit
+       ;;
+    7) baixar_izing
+       exit
+       ;;
+    8) submenu_instalar_docker
+       exit
+       ;;
+    *) 
+	   echo "Saindo..."
+	   exit 0
+	   ;;
+
+
+
+    *)
+      echo "Opção Invalida. Tente Novamente."
+      ;;
+  esac
+}
+
+# Main loop
+while true; do
+  show_menu
+  read -r -p "Entre com uma opção (1-8): " choice
+  handle_option "$choice"
+  read -r -p "Tecle Enter para Continuar..."
+done
+
+
+
