@@ -2135,7 +2135,7 @@ frontend_node_quasar() {
 
   sudo su - root <<EOF
   cd /home/deploy/$instancia/frontend
-  npm install -g @quasar/cli
+  npm install -g @quasar/cli@2.0.0
 
 EOF
 
@@ -2156,7 +2156,7 @@ frontend_node_quasar_instancia() {
 
   sudo su - root <<EOF
   cd /home/deploy/$instancia/frontend
-  npm install -g @quasar/cli
+  npm install -g @quasar/cli@2.0.0
 
 EOF
 
@@ -2558,7 +2558,7 @@ RUN echo "const express = require('express')" > server.js \
     && echo "app.listen($frontend_porta)" >> server.js
 
 RUN npm install
-RUN npm i -g @quasar/cli
+RUN npm i -g @quasar/cli@2.0.0
 RUN quasar build -P -m pwa
 
 EXPOSE $frontend_porta
@@ -3018,10 +3018,10 @@ printf "            ██ ██████ ██ ██   ██ ███�
 printf "            ██     ██ ██ ███  ██ ██        \n";
 printf "            ██   ██   ██ ██ █ ██ ██  ██    \n";
 printf "            ██ ██     ██ ██  ███ ██   █    \n";
-printf "%s""            ██ ██████ ██ ██   ██ ██████ ██ INSTALLER PREMIUM ${NC}${YELLOW}V.4.01${NC} \n";
+printf "%s""            ██ ██████ ██ ██   ██ ██████ ██ INSTALADOR MASTER ${NC}${YELLOW}V.5.00${NC} \n";
 printf "%s""${NC}";
 printf " \n"
-printf "%s""                ${WHITE}Developer Silvio Erick ${NC} "
+printf "%s""                ${WHITE}Developer PowerTech Solutions ${NC} "
 printf " \n\n"
 printf "%s"" ${RED} Sua Arquitetura é: ${NC}";  dpkg --print-architecture;
 printf " \n\n"

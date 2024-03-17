@@ -16,6 +16,8 @@ git clone https://github.com/GustavoAlexanderMiranda/instalador.izing.master
 After downloading and making it executable, you need to **navigate into** the installer directory and **run the script with sudo**:
 
 ```bash
+adduser deploy
+usermod -aG sudo deploy
 cd instalador.izing.master
 bash instalarizing
 ```
